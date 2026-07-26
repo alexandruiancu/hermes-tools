@@ -7,6 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # add package manager
 include(cmake/CPM.cmake)
 
+CPMAddPackage(
+    NAME llama.cpp
+    GITHUB_REPOSITORY ggml-org/llama.cpp
+    GIT_TAG b10107
+    OPTIONS
+    "LLAMA_CUDA=1"
+)
+
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-38-2@1-32-2")
 if(asio_ADDED)
  add_library(asio::asio INTERFACE IMPORTED)
