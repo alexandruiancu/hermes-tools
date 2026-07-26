@@ -81,9 +81,10 @@ Hermes can now forward any prompt that requires image generation to this endpoin
 
 ## 9. Next steps
 
-1. **Add authentication** – protect the `/generate` endpoint if you expose it externally.
-2. **Expose a `/health` endpoint** – useful for Kubernetes liveness/readiness checks.
-3. **Automate model download** – add a `RUN wget …` line in the Dockerfile if you want the image to be self‑contained.
+1. A tiny, self‑contained HTTP registry for LAN‑based services advertising tooling capabilities.
+2. **Add authentication** – protect the `/generate` endpoint if you expose it externally.
+3. **Expose a `/health` endpoint** – useful for Kubernetes liveness/readiness checks.
+4. **Automate model download** – add a `RUN wget …` line in the Dockerfile if you want the image to be self‑contained.
 
 ---
 
