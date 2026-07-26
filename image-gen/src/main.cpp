@@ -22,24 +22,25 @@ std::string run_cli(const std::string &prompt, const std::string &extra = "") {
 
 int main() {
     crow::SimpleApp app;
+    using namespace std::string_literals;
 
-    CROW_ROUTE(app, "/generate").methods("POST")( [](const crow::request &req) {
+    CROW_ROUTE(app, "/generate").methods("POST"_method)([](const crow::request &req) {
         // Parse JSON body
-        crow::json::wvalue body = crow::json::load(req.body);
+        auto body = crow::json::load(req.body);
         std::string prompt = body["prompt"].s();
         if (prompt.empty()) return crow::response(400, "Missing 'prompt'");
 
         // Optional overrides via query params
         std::string extra;
-        if (body.has("steps"))   extra += " --diffusion-steps " + body["steps"].s();
-        if (body.has("eps"))     extra += " --diffusion-eps " + body["eps"].s();
-        if (body.has("algorithm")) extra += " --diffusion-algorithm " + body["algorithm"].s();
+        if (body.has("steps"))   extra += " --diffusion-steps " + std::string(body["steps"].s());
+        if (body.has("eps"))     extra += " --diffusion-eps " + std::string(body["eps"].s());
+        if (body.has("algorithm")) extra += " --diffusion-algorithm " + std::string(body["algorithm"].s());
 
         try {
             std::string image_b64 = run_cli(prompt, extra);
             crow::json::wvalue resp;
             resp["image_base64"] = image_b64;
-            return resp;
+            return crow::response(resp);
         } catch (const std::exception &e) {
             return crow::response(500, e.what());
         }
