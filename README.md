@@ -74,14 +74,15 @@ Hermes can now forward any prompt that requires image generation to this endpoin
 
 * **Crow installation** – If you cannot find `libcrow-dev`, build Crow from source and install the headers to `/usr/include/crow`.
 * **GPU acceleration** – The Docker image is built with the NVIDIA base image and the pod is started with `--runtime nvidia`.  This gives the `llama-diffusion-cli` binary access to CUDA.  If you only have a CPU, omit the `--runtime nvidia` flag.
-* **Model file** – `llama-diffusion-cli` expects a `*.gguf` model.  If you need to use a different one, replace `-m dream7b.gguf` in `run_cli`.
+* **Model file** – `llama-diffusion-cli` expects a `*.gguf` model.  If you need to use a different one, replace `-m dream7b.gguf` in `run_cli`. Or when using stable-diffusion.cpp possible source here: https://huggingface.co/black-forest-labs/FLUX.1-dev/tree/main; Download them into their own sub-directory(e.g. models/); More likely done in CPU&RAM.
 * **Performance** – The Crow server is lightweight; the bottleneck remains the diffusion inference performed by `llama-diffusion-cli`.  For higher throughput consider running multiple replicas or using a GPU‑dedicated server.
 
 ---
 
 ## 9. Next steps
 
-1. A tiny, self‑contained HTTP registry for LAN‑based services advertising tooling capabilities.
+1. A tiny, self‑contained HTTP **registry** for LAN‑based services advertising tooling capabilities. 
+   Multiple tools are going to be available, some doing the same job(testing resource requirements and results, or scaling)
 2. **Add authentication** – protect the `/generate` endpoint if you expose it externally.
 3. **Expose a `/health` endpoint** – useful for Kubernetes liveness/readiness checks.
 4. **Automate model download** – add a `RUN wget …` line in the Dockerfile if you want the image to be self‑contained.
