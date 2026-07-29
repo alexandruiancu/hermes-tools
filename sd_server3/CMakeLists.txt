@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(tinyDreamExample LANGUAGES CXX)
+set(CMAKE_CUDA_FLAGS "-allow-unsupported-compiler")
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -19,8 +20,8 @@ endif()
 # Include path for tiny_dream.hpp
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Find CUDA and include its headers
-find_package(CUDA REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS})
 # If you want to link against CUDA or other libraries, add them here
-target_link_libraries(tiny_dream_example PRIVATE ${CUDA_LIBRARIES})
+# Use modern FindCUDAToolkit
+find_package(CUDAToolkit REQUIRED)
+include_directories(${CUDAToolkit_INCLUDE_DIRS})
+target_link_libraries(tiny_dream_example PRIVATE CUDA::cudart)
