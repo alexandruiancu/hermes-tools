@@ -1,0 +1,1 @@
+ffmpeg -f rawvideo -pixel_format rgb24 -video_size 512x512 -i output.rgb -vframes 1 output.png
