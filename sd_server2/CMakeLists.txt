@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(sd_server LANGUAGES CXX CUDA)
+set(CMAKE_CUDA_FLAGS "-allow-unsupported-compiler")
 
 # Enable C++20
 set(CMAKE_CXX_STANDARD 20)
