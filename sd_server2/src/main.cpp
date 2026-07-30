@@ -1,6 +1,5 @@
 #include <crow.h>
 #include <stb_image_write.h>
-#include <sd/sd.hpp>
 #include <vector>
 #include <thread>
 #include <memory>

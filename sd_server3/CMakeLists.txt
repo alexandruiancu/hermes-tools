@@ -20,8 +20,4 @@ endif()
 # Include path for tiny_dream.hpp
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# If you want to link against CUDA or other libraries, add them here
-# Use modern FindCUDAToolkit
-find_package(CUDAToolkit REQUIRED)
-include_directories(${CUDAToolkit_INCLUDE_DIRS})
 target_link_libraries(tiny_dream_example PRIVATE CUDA::cudart)
