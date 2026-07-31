@@ -2,24 +2,23 @@
 
 This plan explains how to expose the pre‑built **`llama-diffusion-cli`** binary behind an HTTP server using a **C++ Crow** wrapper, package it in a Docker image, and wire the endpoint into Hermes Agent.
 
+Different path alltogether:
+https://github.com/huggingface/diffusers
+
 ---
 
 ## 1. Directory layout
 
 ```
-~/services/
-└─ hermes-tools/          ← Root folder for the Hermes tools
-   ├─ image-gen/          ← Go implementation (go.mod, main.go, Dockerfile)
-   │  ├─ Dockerfile
-   │  ├─ go.mod
-   │  └─ main.go
-   ├─ tts/                ← Python implementation from A
-   │  ├─ Dockerfile
-   │  ├─ requirements.txt
-   │  └─ app.py
-   └─ pod-setup.sh
+~/services/hermes-tools/
+├─ cmake        - CPM helpers
+├─ pod-setup.sh - containerization to easy deploy
+├─ .env         - runtime parametrization
+├─ sd_server1/  - llama image generation A(probably obsolete or umaintained)
+├─ sd_server2/  - leejet (most promising)
+└─ sd_server3/  - tiny dream
+   └─ models/
 ```
-
 ---
 
 ## 2. Crow server (`server.cpp`)
