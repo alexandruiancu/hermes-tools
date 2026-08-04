@@ -2,6 +2,7 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set(COMMON_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/common")
 
 cmake_minimum_required(VERSION 3.20)
 project(HermesTools)
@@ -31,7 +32,8 @@ CPMAddPackage(
 # Use modern FindCUDAToolkit
 find_package(CUDAToolkit REQUIRED)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
+include_directories(${COMMON_INCLUDES})
 
 add_subdirectory(sd_server1 sd_server1/build)
-#add_subdirectory(sd_server2, sd_server2/build)
+add_subdirectory(sd_server2 sd_server2/build)
 add_subdirectory(sd_server3 sd_server3/build)
