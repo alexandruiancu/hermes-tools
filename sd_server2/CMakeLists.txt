@@ -16,4 +16,4 @@ add_executable(sd2
 target_include_directories(sd2 PRIVATE include ${CMAKE_INCLUDE_PATH})
 
 # Link libraries
-target_link_libraries(sd2 PRIVATE CUDA::cudart Crow::Crow)
+target_link_libraries(sd2 PRIVATE CUDA::cudart Crow::Crow hermes_common)

@@ -1,5 +1,7 @@
 #include <crow.h>
-#include "../common/server_utils.hpp"
+// Common helpers shared with other sd_server* projects
+#include "server_utils.hpp"
+
 int main()
 {
     // 1) Load the model once
@@ -11,13 +13,13 @@ int main()
     } ctx;
     // 2) Start Crow
     crow::SimpleApp app;
-    CROW_ROUTE(app, "/sd").methods("POST"_method)([ctx = std::move(ctx)](const crow::request& req, crow::response& res){
+    CROW_ROUTE(app, "/sd").methods("POST"_method)([&](const crow::request& req, crow::response& res){
         try {
             auto json = crow::json::load(req.body);
             ImageRequest r = ImageRequest::from_json(json);
 
             // run inference
-            std::vector<uint8_t> raw = ctx->infer(r.prompt, r.steps, r.cfg_scale, r.width, r.height);
+            std::vector<uint8_t> raw = ctx.infer(r.prompt, r.steps, r.cfg_scale, r.width, r.height);
             write_image_response(res, raw);
         } catch (const std::exception& e) {
             set_error(res, 500, e.what());

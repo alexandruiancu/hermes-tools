@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(sd3 src/main.cpp src/cuda_infer.cpp)
 
+target_link_libraries(sd3 PRIVATE Crow::Crow hermes_common)
+
 # Download Flux model at build time
 if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/models/flux/flux1.safetensors)
     add_custom_command(

@@ -9,7 +9,6 @@ CPMAddPackage(
 
 # Build Crow server
 add_executable(sd1
-    ${COMMON_INCLUDES}/server_utils.cpp
     src/main.cpp)
 
-target_link_libraries(sd1 PRIVATE Crow::Crow)
+target_link_libraries(sd1 PRIVATE Crow::Crow hermes_common)
