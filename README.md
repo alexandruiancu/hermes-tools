@@ -22,6 +22,8 @@ https://github.com/huggingface/diffusers
 ---
 
 ## 2. Crow server (`server.cpp`)
+This component is implemented in the sub‑projects `sd_server1` and `sd_server3`. 
+It serves as a lightweight HTTP wrapper around the underlying LLM inference binary, exposing an endpoint that mimics the OpenAI Chat Completion API. By forwarding requests to the model through Crow, downstream services can interact with the local LLM using familiar API calls without needing direct access to the binary.
 
 ---
 
