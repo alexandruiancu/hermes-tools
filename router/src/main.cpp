@@ -12,6 +12,7 @@
 
 #include "proxy.hpp"
 #include "metrics.hpp"
+#include "config_loader.hpp"
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -49,7 +50,20 @@ void handle_session(tcp::socket socket) {
 }
 
 int main(int argc, char* argv[]) {
-    const unsigned short port = 8080;
+    // Load configuration from external file
+    std::string config_path = "config.json";
+    if (argc > 1) {
+        config_path = argv[1];
+    }
+    
+    if (!ConfigLoader::load(config_path)) {
+        std::cerr << "Failed to load configuration from: " << config_path << std::endl;
+        return 1;
+    }
+    
+    // Get server configuration
+    ServerConfig server_config = ConfigLoader::get_server_config();
+    const unsigned short port = server_config.port;
     
     net::io_context ioc{1};
     
@@ -62,7 +76,8 @@ int main(int argc, char* argv[]) {
     // Create acceptor
     tcp::acceptor acceptor{ioc, tcp::endpoint{tcp::v4(), port}};
     
-    std::cout << "AI Router starting on port " << port << std::endl;
+    std::cout << "AI Router starting on " << server_config.host << ":" << port << std::endl;
+    std::cout << "Loaded " << ConfigLoader::get_endpoints().size() << " endpoints" << std::endl;
     
     // Start accepting connections
     while (true) {
