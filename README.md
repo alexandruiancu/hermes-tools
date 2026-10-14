@@ -93,3 +93,21 @@ Hermes can now forward any prompt that requires image generation to this endpoin
 *End of plan.*
 
 ---
+
+## 10. Typical protocols for AI inference endpoints
+
+| Protocol | How it is used with LLM / vision / speech APIs | When it is the best fit |
+| --- | --- | --- |
+| HTTPS (HTTP/1.1 or HTTP/2) | Standard REST-style calls such as `POST /v1/completions` (OpenAI, Anthropic, Azure OpenAI, etc.). Most providers expose a simple request-response JSON API over TLS. | • One-shot or batch queries where the whole prompt and response fit in a single request. <br> • Environments needing maximum compatibility with firewalls, CDNs, proxies, and serverless platforms. <br> • Situations where you want easy caching, retry logic, and stateless scaling. |
+| HTTP/2 streaming (SSE / chunked transfer) | Same HTTPS endpoint, but the server keeps the connection open and streams partial token data (for example, `text/event-stream`). This enables progressive UI updates while staying on the familiar HTTP stack. | • Token-by-token streaming when you want low latency without introducing a separate protocol. <br> • Clients that cannot open WebSockets, such as some mobile web browsers with restrictive CSP. |
+| WebSockets | After an initial HTTP upgrade, a persistent bidirectional channel carries JSON or binary messages such as prompts, partial responses, tool-call data, and client-side steering. Common in custom “agentic” UI layers and collaborative AI chatrooms. | • Real-time, bidirectional interactions with continuous generation, tool calls, and user interruptions. <br> • Multi-device session continuity where the client may send steering commands while the model streams tokens. <br> • Scenarios needing low-latency push notifications beyond simple token streams. |
+| gRPC (HTTP/2-based) | Proto-defined services such as `InvokeModel` or `StreamResponse` with built-in client-side and server-side streaming. Used in internal microservice pipelines or high-throughput inference clusters. | • Service-to-service communication inside a data center where schema safety, multiplexing, and binary efficiency matter. <br> • Large-scale deployments requiring protobuf contracts and automatic code generation. |
+
+## 11. Concise comparison: Boost.Beast vs CrowCpp vs nghttp2
+
+| Library | HTTPS | HTTP/2 | WebSockets | Best for | Tradeoff |
+| --- | --- | --- | --- | --- | --- |
+| Boost.Beast | Yes, with OpenSSL | Limited / not first-class HTTP/2 | Yes | Custom proxies, clients, HTTP/1.1 services, WS upgrades | More low-level; significant boilerplate |
+| CrowCpp | Yes, with TLS support | No native HTTP/2 support | Limited / not a primary focus | Fast small web APIs, local services, simple routing | Not ideal for streaming-heavy AI gateway |
+| nghttp2 | N/A as a full app server; HTTP/2 engine | Yes, strong HTTP/2 support | Not a general web server | HTTP/2 transport, multiplexing, streaming | You still need app/server glue around it |
+
