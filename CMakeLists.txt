@@ -36,6 +36,4 @@ include_directories(${COMMON_INCLUDES})
 
 add_subdirectory(common common/build)
 add_subdirectory(sd_server1 sd_server1/build)
-add_subdirectory(sd_server2 sd_server2/build)
-add_subdirectory(sd_server3 sd_server3/build)
 add_subdirectory(router router/build)

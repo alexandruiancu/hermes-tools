@@ -1,14 +1,19 @@
+cmake_minimum_required(VERSION 3.20)
 
-CPMAddPackage(
-    NAME llama.cpp
-    GITHUB_REPOSITORY ggml-org/llama.cpp
-    GIT_TAG b10107
-    OPTIONS
-    "LLAMA_CUDA=1"
+project(sd_server1 LANGUAGES CXX)
+set(CMAKE_CUDA_FLAGS "-allow-unsupported-compiler")
+
+# Enable C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Sources
+add_executable(sd1
+    src/main.cpp
 )
 
-# Build Crow server
-add_executable(sd1
-    src/main.cpp)
+# Include directories
+target_include_directories(sd1 PRIVATE include ${CMAKE_INCLUDE_PATH})
 
-target_link_libraries(sd1 PRIVATE Crow::Crow hermes_common)
+# Link libraries
+target_link_libraries(sd1 PRIVATE CUDA::cudart Crow::Crow hermes_common)

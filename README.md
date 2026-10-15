@@ -14,15 +14,14 @@ https://github.com/huggingface/diffusers
 ├─ cmake        - CPM helpers
 ├─ pod-setup.sh - containerization to easy deploy
 ├─ .env         - runtime parametrization
-├─ sd_server1/  - llama image generation A(probably obsolete or umaintained)
-├─ sd_server2/  - leejet (most promising)
-└─ sd_server3/  - tiny dream
+├─ sd_server1/  - leejet (most promising)
+└─ sd_container/  - leejet container quadlets
    └─ models/
 ```
 ---
 
 ## 2. Crow server (`server.cpp`)
-This component is implemented in the sub‑projects `sd_server1` and `sd_server3`. 
+This component is implemented in the sub‑project `sd_server1`. 
 It serves as a lightweight HTTP wrapper around the underlying LLM inference binary, exposing an endpoint that mimics the OpenAI Chat Completion API. By forwarding requests to the model through Crow, downstream services can interact with the local LLM using familiar API calls without needing direct access to the binary.
 
 ---
