@@ -1,0 +1,56 @@
+{
+  "endpoints": {
+    "llama-cpp": {
+      "host": "op.local",
+      "port": 11500,
+      "path_prefix": "/llama-cpp"
+    },
+    "firecrawl": {
+      "host": "op.local",
+      "port": 3002,
+      "path_prefix": "/firecrawl"
+    },
+    "image-gen": {
+      "host": "op.local",
+      "port": 11903,
+      "path_prefix": "/image"
+    },
+    "searxng": {
+      "host": "op.local",
+      "port": 0,
+      "path_prefix": "/searx",
+      "enabled": false
+    },
+    "openrouter": {
+      "host": "openrouter.ai",
+      "port": 443,
+      "path_prefix": "/openrouter",
+      "ssl": true
+    }
+  },
+  "api_routes": {
+    "llama-cpp": [
+      "/v1/models",
+      "/v1/chat/completions",
+      "/v1/embeddings",
+      "/v1/completions",
+      "/v1/metrics"
+    ],
+    "firecrawl": [
+      "/api/v1/search",
+      "/api/v1/scrape"
+    ],
+    "image-gen": [
+      "/v1/images/generations",
+      "/v1/images/variations"
+    ],
+    "openrouter": [
+      "/v1/chat/completions",
+      "/v1/models"
+    ]
+  },
+  "server": {
+    "port": 8080,
+    "host": "0.0.0.0"
+  }
+}
