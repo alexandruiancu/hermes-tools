@@ -2,29 +2,24 @@
   "endpoints": {
     "llama-cpp": {
       "host": "op.local",
-      "port": 11500,
-      "path_prefix": "/llama-cpp"
+      "port": 11500
     },
     "firecrawl": {
       "host": "op.local",
-      "port": 3002,
-      "path_prefix": "/firecrawl"
+      "port": 3002
     },
     "image-gen": {
       "host": "op.local",
-      "port": 11903,
-      "path_prefix": "/image"
+      "port": 11903
     },
     "searxng": {
       "host": "op.local",
       "port": 0,
-      "path_prefix": "/searx",
       "enabled": false
     },
     "openrouter": {
       "host": "openrouter.ai",
       "port": 443,
-      "path_prefix": "/openrouter",
       "ssl": true
     }
   },

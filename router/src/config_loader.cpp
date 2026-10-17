@@ -143,7 +143,6 @@ void ConfigLoader::parse_endpoints(const std::string& json) {
         ep.name = name;
         ep.host = extract_string(obj, "host");
         ep.port = static_cast<unsigned short>(extract_int(obj, "port"));
-        ep.path_prefix = extract_string(obj, "path_prefix");
         ep.enabled = extract_bool(obj, "enabled", true);
         ep.ssl = extract_bool(obj, "ssl", false);
         

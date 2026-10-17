@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <utility>
 
 #include "config_loader.hpp"
 
@@ -20,11 +21,14 @@ public:
                        http::response<http::string_body>& res);
     
 private:
-    // Find matching backend for a request path
-    EndpointConfig* find_backend(const std::string& path);
+    // Find matching backend for a request path, optionally by model name
+    EndpointConfig* find_backend(const std::string& path, const std::string& model_name = "");
     
-    // Check if path matches any API route
-    std::string find_api_route(const std::string& path);
+    // Parse model name in "endpoint:model" format → (endpoint_name, clean_model_name)
+    std::pair<std::string, std::string> parse_model_name(const std::string& model);
+    
+    // Extract a string field from a JSON body (simple manual parsing)
+    std::string extract_json_string(const std::string& body, const std::string& key);
     
     // Handle local routes (not forwarded to backend)
     void handle_local_metrics(const http::request<http::string_body>& req,
@@ -34,7 +38,13 @@ private:
                         EndpointConfig& backend,
                         http::response<http::string_body>& res);
     
-    // Handle /v1/models endpoint - forward to llama-cpp
+    // Actually forward an HTTP request to a backend and read the response
+    bool http_forward(const std::string& method, const std::string& target,
+                     const std::string& body, const std::string& content_type,
+                     EndpointConfig& backend,
+                     http::response<http::string_body>& res);
+    
+    // Handle /v1/models endpoint - aggregate from all backends
     void handle_v1_models(const http::request<http::string_body>& req,
                          http::response<http::string_body>& res);
     

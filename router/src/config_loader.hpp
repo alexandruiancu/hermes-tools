@@ -3,13 +3,11 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <optional>
 
 struct EndpointConfig {
     std::string name;
     std::string host;
     unsigned short port;
-    std::string path_prefix;
     bool enabled = true;
     bool ssl = false;
 };
