@@ -4,6 +4,7 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
 #include <iostream>
+#include <cstdlib>
 
 namespace beast = boost::beast;
 namespace http = beast::http;
@@ -103,6 +104,31 @@ void ProxyHandler::handle_request(const http::request<http::string_body>& req,
 void ProxyHandler::forward_request(const http::request<http::string_body>& req,
                                  EndpointConfig& backend,
                                  http::response<http::string_body>& res) {
+    // Create backend request
+    http::request<http::string_body> backend_req;
+    backend_req.method(req.method());
+    backend_req.target() = req.target();
+    
+    // Set host header
+    backend_req.set(http::field::host, backend.host);
+    
+    // Set accept header
+    backend_req.set(http::field::accept, "application/json");
+    
+    // Forward relevant headers from original request
+    if (req.contains(http::field::authorization)) {
+        backend_req.set(http::field::authorization, req[http::field::authorization]);
+    }
+    
+    // Inject OpenRouter API key if backend is openrouter
+    if (backend.name == "openrouter" && !backend.host.empty()) {
+        std::string apiKey = std::getenv("OPENROUTER_API_KEY");
+        if (!apiKey.empty()) {
+            backend_req.set(http::field::authorization, "Bearer " + apiKey);
+            std::cout << "[PROXY] Injected OpenRouter API key: Bearer " << apiKey << std::endl;
+        }
+    }
+    
     // This is a placeholder for the actual forwarding logic.
     // In a real implementation, this would open a connection to the backend
     // and proxy the request/response.
@@ -186,16 +212,17 @@ void ProxyHandler::handle_v1_models(const http::request<http::string_body>& req,
               << llama_backend->host << ":" << llama_backend->port << std::endl;
     
     // Create a new request to the backend
-    http::request<http::string_body> backend_req{http::method::get, req.base()};
+    http::request<http::string_body> backend_req;
+    backend_req.method(http::verb::get);
     backend_req.target() = "/v1/models";
     backend_req.set(http::field::host, llama_backend->host);
     backend_req.set(http::field::accept, "application/json");
     
     // Forward any relevant headers
-    if (req.is_request(http::field::authorization)) {
+    if (req.contains(http::field::authorization)) {
         backend_req.set(http::field::authorization, req[http::field::authorization]);
     }
-    
+
     // Use async HTTP client to forward the request
     // For simplicity, we'll return a placeholder response here
     // In production, you'd use boost::asio::ip::tcp::socket to connect and forward

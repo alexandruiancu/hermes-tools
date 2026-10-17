@@ -5,6 +5,7 @@ std::mutex Metrics::mutex_;
 std::map<std::string, int> Metrics::request_counts_;
 std::map<std::string, std::vector<double>> Metrics::latencies_;
 std::map<std::string, std::pair<int, int>> Metrics::token_counts_;
+std::map<std::string, ModelMetrics> Metrics::model_metrics_;
 
 void Metrics::record_request(const std::string& service, const std::string& method) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -28,6 +29,20 @@ void Metrics::record_tokens(const std::string& service, int input_tokens, int ou
               << ", out=" << output_tokens << std::endl;
 }
 
+void Metrics::record_model_loaded(const std::string& model_name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    model_metrics_[model_name].loaded = true;
+    std::cout << "[METRICS] Model loaded: " << model_name << std::endl;
+}
+
+void Metrics::record_model_unloaded(const std::string& model_name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (model_metrics_.count(model_name)) {
+        model_metrics_[model_name].loaded = false;
+    }
+    std::cout << "[METRICS] Model unloaded: " << model_name << std::endl;
+}
+
 std::map<std::string, int> Metrics::get_request_counts() {
     std::lock_guard<std::mutex> lock(mutex_);
     return request_counts_;
@@ -46,4 +61,26 @@ std::map<std::string, double> Metrics::get_avg_latency() {
     }
     
     return avg;
+}
+
+std::map<std::string, ModelMetrics> Metrics::get_model_metrics() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return model_metrics_;
+}
+
+ModelMetrics Metrics::get_model_metrics(const std::string& model_name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (model_metrics_.count(model_name)) {
+        return model_metrics_[model_name];
+    }
+    return ModelMetrics{};
+}
+
+std::vector<std::string> Metrics::get_all_model_names() {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::vector<std::string> names;
+    for (const auto& [name, _] : model_metrics_) {
+        names.push_back(name);
+    }
+    return names;
 }
