@@ -7,8 +7,11 @@ set(COMMON_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/common/include")
 cmake_minimum_required(VERSION 3.20)
 project(HermesTools)
 
+option(USE_CUDA "Enable CUDA support" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 include(cmake/CPM.cmake)
 
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-38-2@1-32-2")
@@ -17,7 +20,6 @@ if(asio_ADDED)
   target_include_directories(asio::asio SYSTEM INTERFACE ${asio_SOURCE_DIR}/asio/include)
   target_compile_definitions(asio::asio INTERFACE ASIO_STANDALONE ASIO_NO_DEPRECATED)
 endif()
-#target_link_libraries(asio::asio INTERFACE Threads::Threads)
 
 CPMAddPackage(
     NAME crow
@@ -28,12 +30,16 @@ CPMAddPackage(
         "CROW_BUILD_TESTS=OFF"
 )
 
-# If you want to link against CUDA or other libraries, add them here
-# Use modern FindCUDAToolkit
-find_package(CUDAToolkit REQUIRED)
-include_directories(${CUDAToolkit_INCLUDE_DIRS})
 include_directories(${COMMON_INCLUDES})
 
+# If you want to link against CUDA or other libraries, add them here
+if(USE_CUDA)
+  # Use modern FindCUDAToolkit
+  find_package(CUDAToolkit REQUIRED)
+  include_directories(${CUDAToolkit_INCLUDE_DIRS})
+
+  add_subdirectory(sd_server1 sd_server1/build)
+endif()
+
 add_subdirectory(common common/build)
-add_subdirectory(sd_server1 sd_server1/build)
 add_subdirectory(router router/build)
