@@ -3,6 +3,9 @@
 #include <boost/beast/http.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <openssl/ssl.h>
 #include <iostream>
 #include <cstdlib>
 
@@ -148,11 +151,7 @@ bool ProxyHandler::http_forward(const std::string& method, const std::string& ta
         net::ip::tcp::resolver resolver{ioc};
         auto results = resolver.resolve(backend.host, std::to_string(backend.port));
         
-        // Connect to backend
-        net::ip::tcp::socket socket{ioc};
-        net::connect(socket, results);
-        
-        // Build the HTTP request
+        // Build the HTTP request (shared between SSL and non-SSL paths)
         http::request<http::string_body> backend_req;
         backend_req.method_string(method);
         backend_req.target(target);
@@ -168,30 +167,70 @@ bool ProxyHandler::http_forward(const std::string& method, const std::string& ta
             backend_req.body() = body;
         }
         
-        // Inject OpenRouter API key if backend is openrouter
-        if (backend.name == "openrouter") {
-            std::string apiKey = std::getenv("OPENROUTER_API_KEY");
-            if (!apiKey.empty()) {
-                backend_req.set(http::field::authorization, "Bearer " + apiKey);
-            }
+        // Inject API key if configured for this backend
+        if (!backend.api_key.empty()) {
+            backend_req.set(http::field::authorization, "Bearer " + backend.api_key);
         }
         
         backend_req.prepare_payload();
         
-        // Send request
         beast::error_code ec;
-        http::write(socket, backend_req, ec);
-        if (ec) {
-            std::cerr << "[PROXY] Write error to " << backend.name << ": " << ec.message() << std::endl;
-            return false;
-        }
         
-        // Read response
-        beast::flat_buffer buffer;
-        http::read(socket, buffer, res, ec);
-        if (ec) {
-            std::cerr << "[PROXY] Read error from " << backend.name << ": " << ec.message() << std::endl;
-            return false;
+        if (backend.ssl) {
+            // --- SSL/TLS path ---
+            net::ip::tcp::socket raw_socket{ioc};
+            net::connect(raw_socket, results);
+            
+            // Create SSL context for client
+            net::ssl::context ssl_ctx(net::ssl::context::tlsv12_client);
+            ssl_ctx.set_verify_mode(net::ssl::verify_none);
+            
+            // Wrap socket in SSL stream (stream takes ownership of the socket)
+            net::ssl::stream<net::ip::tcp::socket> ssl_socket(std::move(raw_socket), ssl_ctx);
+            
+            // Enable SNI so the server selects the correct certificate
+            if (!SSL_set_tlsext_host_name(ssl_socket.native_handle(), backend.host.c_str())) {
+                std::cerr << "[PROXY] Failed to set SNI for " << backend.host << ": "
+                          << ERR_error_string(ERR_get_error(), nullptr) << std::endl;
+                return false;
+            }
+            
+            // Perform SSL handshake as client
+            ssl_socket.handshake(net::ssl::stream_base::client);
+            
+            // Send request over SSL
+            http::write(ssl_socket, backend_req, ec);
+            if (ec) {
+                std::cerr << "[PROXY] SSL write error to " << backend.name << ": " << ec.message() << std::endl;
+                return false;
+            }
+            
+            // Read response over SSL
+            beast::flat_buffer buffer;
+            http::read(ssl_socket, buffer, res, ec);
+            if (ec) {
+                std::cerr << "[PROXY] SSL read error from " << backend.name << ": " << ec.message() << std::endl;
+                return false;
+            }
+        } else {
+            // --- Plain TCP path ---
+            net::ip::tcp::socket socket{ioc};
+            net::connect(socket, results);
+            
+            // Send request
+            http::write(socket, backend_req, ec);
+            if (ec) {
+                std::cerr << "[PROXY] Write error to " << backend.name << ": " << ec.message() << std::endl;
+                return false;
+            }
+            
+            // Read response
+            beast::flat_buffer buffer;
+            http::read(socket, buffer, res, ec);
+            if (ec) {
+                std::cerr << "[PROXY] Read error from " << backend.name << ": " << ec.message() << std::endl;
+                return false;
+            }
         }
         
         return true;
