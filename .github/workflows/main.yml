@@ -19,7 +19,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends clang clang-tidy cppcheck clang-format cmake ninja-build python3-pip golang-go
 
-      - name: Setup reviewdog
+      - name: Setup Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.20'
@@ -44,14 +44,8 @@ jobs:
           if command -v run-clang-tidy >/dev/null 2>&1; then
             run-clang-tidy -p . -quiet 2>&1 | reviewdog -f=clang-tidy -name="clang-tidy" -reporter=github-pr-review -filter-mode=file -level=warning || true
           else
-            python3 - <<'PY' > /tmp/clang_tidy_cmds.sh
-import json
-with open('compile_commands.json') as f:
-    entries = json.load(f)
-files = sorted({e['file'] for e in entries})
-for fn in files:
-    print('clang-tidy', fn, '-p', '.')
-PY
+            # generate clang-tidy commands from compile_commands.json in a safe, single-line python invocation
+            python3 -c "import json,sys;entries=json.load(open('compile_commands.json'));files=sorted({e['file'] for e in entries});\nprint('\n'.join('clang-tidy {} -p .'.format(f) for f in files))" > /tmp/clang_tidy_cmds.sh
             bash /tmp/clang_tidy_cmds.sh 2>&1 | reviewdog -f=clang-tidy -name="clang-tidy" -reporter=github-pr-review -filter-mode=file -level=warning || true
           fi
 
