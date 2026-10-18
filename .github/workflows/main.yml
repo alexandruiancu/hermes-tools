@@ -1,0 +1,80 @@
+name: C++ automated review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang clang-tidy cppcheck clang-format cmake ninja-build python3-pip golang-go
+
+      - name: Setup reviewdog
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+      - name: Install reviewdog
+        run: |
+          GOBIN="$GITHUB_WORKSPACE/.gobin"
+          mkdir -p "$GOBIN"
+          export GOBIN
+          go install github.com/reviewdog/reviewdog/cmd/reviewdog@latest
+          echo "$GOBIN" >> "$GITHUB_PATH"
+
+      - name: Configure CMake (generate compile_commands.json)
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Run clang-tidy and report with reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cd build
+          if command -v run-clang-tidy >/dev/null 2>&1; then
+            run-clang-tidy -p . -quiet 2>&1 | reviewdog -f=clang-tidy -name="clang-tidy" -reporter=github-pr-review -filter-mode=file -level=warning || true
+          else
+            python3 - <<'PY' > /tmp/clang_tidy_cmds.sh
+import json
+with open('compile_commands.json') as f:
+    entries = json.load(f)
+files = sorted({e['file'] for e in entries})
+for fn in files:
+    print('clang-tidy', fn, '-p', '.')
+PY
+            bash /tmp/clang_tidy_cmds.sh 2>&1 | reviewdog -f=clang-tidy -name="clang-tidy" -reporter=github-pr-review -filter-mode=file -level=warning || true
+          fi
+
+      - name: Run cppcheck and report with reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          cppcheck --enable=warning,performance,portability --quiet --project=build/compile_commands.json 2> cppcheck.txt || true
+          cat cppcheck.txt || true
+          reviewdog -f=cppcheck -name="cppcheck" -reporter=github-pr-review -filter-mode=file < cppcheck.txt || true
+
+      - name: Check clang-format style and report with reviewdog
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git fetch origin ${{ github.base_ref }} --depth=1 || true
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- '*.c' '*.cpp' '*.cc' '*.h' '*.hpp' || true)
+          if [ -z "$CHANGED" ]; then
+            echo "No C/C++ files changed."
+            exit 0
+          fi
+          for f in $CHANGED; do
+            clang-format -style=file "$f" | diff -u "$f" - || true
+          done | reviewdog -f=diff -name="clang-format" -reporter=github-pr-review -filter-mode=file || true
