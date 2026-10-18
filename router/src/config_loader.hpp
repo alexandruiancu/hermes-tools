@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <nlohmann/json.hpp>
 
 struct EndpointConfig {
     std::string name;
@@ -10,6 +11,7 @@ struct EndpointConfig {
     unsigned short port;
     bool enabled = true;
     bool ssl = false;
+    std::string api_key;
 };
 
 struct ServerConfig {
@@ -37,7 +39,7 @@ private:
     static bool loaded_;
     
     // Internal parsing functions
-    static void parse_endpoints(const std::string& json);
-    static void parse_api_routes(const std::string& json);
-    static void parse_server_config(const std::string& json);
+    static void parse_endpoints(const nlohmann::json& json);
+    static void parse_api_routes(const nlohmann::json& json);
+    static void parse_server_config(const nlohmann::json& json);
 };
