@@ -6,7 +6,7 @@ on:
 
 jobs:
   review:
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -17,7 +17,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends clang clang-tidy cppcheck clang-format cmake ninja-build python3-pip golang-go
+          sudo apt-get install -y --no-install-recommends clang clang-tidy cppcheck clang-format cmake ninja-build python3-pip golang-go libboost-all-dev
 
       - name: Setup Go
         uses: actions/setup-go@v4
