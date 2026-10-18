@@ -1,10 +1,13 @@
 # AI Router - Boost.Beast Implementation
 
 ## Overview
-C++ HTTP proxy router using Boost.Beast for AI consumption tracking across endpoints.
+C++ HTTP proxy router using Boost.Beast for AI consumption tracking across endpoints.  
+The router is **transparent** — clients use standard OpenAI-compatible paths (`/v1/models`, `/v1/chat/completions`, etc.) and the router dispatches to the correct backend based on the model name.
 
 ## Features
-- Request routing to multiple backends
+- Transparent proxy — no path prefixes needed
+- Model-name-based routing: `endpoint:model` convention
+- Multi-backend `/v1/models` aggregation with prefixed model IDs
 - Metrics collection: request count, latency, token usage
 - Health checks and failover
 - Authentication support
@@ -39,29 +42,24 @@ The router uses an external JSON configuration file (`config.json`) to define en
   "endpoints": {
     "llama-cpp": {
       "host": "op.local",
-      "port": 11500,
-      "path_prefix": "/llama"
+      "port": 11500
     },
     "firecrawl": {
       "host": "op.local",
-      "port": 3001,
-      "path_prefix": "/firecrawl"
+      "port": 3002
     },
     "image-gen": {
       "host": "op.local",
-      "port": 11903,
-      "path_prefix": "/image"
+      "port": 11903
     },
     "searxng": {
       "host": "op.local",
       "port": 0,
-      "path_prefix": "/searx",
       "enabled": false
     },
     "openrouter": {
       "host": "openrouter.ai",
       "port": 443,
-      "path_prefix": "/openrouter",
       "ssl": true
     }
   },
@@ -70,7 +68,8 @@ The router uses an external JSON configuration file (`config.json`) to define en
       "/v1/models",
       "/v1/chat/completions",
       "/v1/embeddings",
-      "/v1/completions"
+      "/v1/completions",
+      "/v1/metrics"
     ],
     "firecrawl": [
       "/api/v1/search",
@@ -93,9 +92,36 @@ The router uses an external JSON configuration file (`config.json`) to define en
 ```
 
 ### Configuration Sections
-- **endpoints**: Define backend services with host, port, path prefix, SSL flag, and enabled/disabled status
+- **endpoints**: Define backend services with host, port, SSL flag, and enabled/disabled status
 - **api_routes**: Map API routes to specific endpoints (e.g., `/v1/models` → llama-cpp)
 - **server**: Configure the router's listening port and host
+
+## Model Name Convention
+
+The router uses a **`endpoint:model`** naming convention to dispatch requests to the correct backend.
+
+### How it works
+
+1. **`GET /v1/models`** — The router queries all backends that list `/v1/models` in their `api_routes`, collects their model lists, and prefixes each model `id` with the endpoint name:
+   ```json
+   {
+     "data": [
+       { "id": "llama-cpp:Qwen3.6-35B", ... },
+       { "id": "openrouter:claude-3-opus", ... }
+     ]
+   }
+   ```
+
+2. **`POST /v1/chat/completions`** — The client sends the prefixed model name:
+   ```json
+   {
+     "model": "llama-cpp:Qwen3.6-35B",
+     "messages": [...]
+   }
+   ```
+   The router extracts `llama-cpp` as the target endpoint, strips the prefix from the body before forwarding, and sends the request to the llama-cpp backend with `"model": "Qwen3.6-35B"`.
+
+3. **Non-model routes** (e.g., `/api/v1/search`) — The router dispatches based on `api_routes` matching, unchanged from before.
 
 ## Metrics
 
