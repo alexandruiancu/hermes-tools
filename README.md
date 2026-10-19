@@ -1,9 +1,6 @@
-# Hermes Self‑Host Tools Plan
+# tiny self-hosted LLM & tools gateway
 
-This plan explains how to expose the pre‑built **`llama-diffusion-cli`** binary behind an HTTP server using a **C++ Crow** wrapper, package it in a Docker image, and wire the endpoint into Hermes Agent.
-
-Different path alltogether:
-https://github.com/huggingface/diffusers
+A small C++ HTTP router (`ai_router`, Boost.Beast) that sits in front of local and cloud AI backends and exposes a single OpenAI‑compatible API. Clients talk to one port; the router dispatches each request to the right engine based on the model name (`endpoint:model`), aggregates `/v1/models` across all backends, and tracks per‑endpoint metrics. Current backends: `llama-cpp` (local LLM engine), `firecrawl` (web search/scrape), `image-gen`, and `openrouter` (cloud, over SSL). Configuration is externalized to `config.json`, so backends can be added or changed without recompiling. The older image‑generation server (`sd_server1`, Crow) is kept as a legacy component.
 
 ---
 
@@ -11,12 +8,19 @@ https://github.com/huggingface/diffusers
 
 ```
 ~/services/hermes-tools/
-├─ cmake        - CPM helpers
-├─ pod-setup.sh - containerization to easy deploy
-├─ .env         - runtime parametrization
-├─ sd_server1/  - leejet (most promising)
-└─ sd_container/  - leejet container quadlets
-   └─ models/
+├─ CMakeLists.txt   - top-level build
+├─ cmake/           - CPM helpers (CPM.cmake, crow.cmake)
+├─ common/          - shared C++ helpers (include/, src/)
+├─ router/          - the AI router (Boost.Beast)
+│  ├─ src/          - main.cpp, proxy.cpp, metrics.cpp, config_loader.cpp
+│  ├─ config.json   - endpoints, api_routes, server settings
+│  └─ CMakeLists.txt
+├─ sd_server1/      - legacy: Crow image-gen server
+├─ sd_container/    - legacy: container quadlets
+│  ├─ pod-setup.sh
+│  └─ models/
+├─ .env             - runtime parametrization
+└─ plan.md          - design notes
 ```
 ---
 
@@ -27,6 +31,22 @@ It serves as a lightweight HTTP wrapper around the underlying LLM inference bina
 ---
 
 ## 3. CMake build file (`CMakeLists.txt`)
+
+The top-level `CMakeLists.txt` builds `common` and `router` unconditionally, and pulls `asio` + `crow` via CPM.
+
+**`sd_server1` is built only when `USE_CUDA=ON`.** It links `CUDA::cudart`, `Crow`, and `hermes_common`, so it needs the CUDA toolkit and a C++20 compiler. The router itself is C++17 and does not need CUDA:
+
+```bash
+# router only (no CUDA)
+cmake -S . -B build
+cmake --build build
+
+# router + legacy sd_server1 (requires CUDA)
+cmake -S . -B build -DUSE_CUDA=ON
+cmake --build build
+```
+
+**SSL option.** The router links **OpenSSL** (`OpenSSL::SSL`, `OpenSSL::Crypto`) and requires it (`find_package(OpenSSL REQUIRED)`). This powers the TLS path in `http_forward()`: backends flagged `"ssl": true` (e.g. `openrouter` on port 443) are reached over an `ssl::stream` with SNI, while plain backends use a raw TCP socket. Boost is located in `CONFIG` mode (`find_package(Boost 1.70 REQUIRED CONFIG COMPONENTS system)`), and `nlohmann_json` is fetched via CPM.
 
 ---
 
