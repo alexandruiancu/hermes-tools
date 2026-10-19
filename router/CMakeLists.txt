@@ -13,7 +13,7 @@ CPMAddPackage(
     GIT_TAG v3.12.0
 )
 
-find_package(Boost 1.70 REQUIRED COMPONENTS system)
+find_package(Boost 1.70 REQUIRED CONFIG COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
 add_executable(ai_router src/main.cpp src/proxy.cpp src/metrics.cpp src/config_loader.cpp)
