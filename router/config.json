@@ -20,7 +20,8 @@
     "openrouter": {
       "host": "openrouter.ai",
       "port": 443,
-      "ssl": true
+      "ssl": true,
+      "api_key": "sk-or-v1-YOUR_KEY_HERE"
     }
   },
   "api_routes": {
@@ -45,7 +46,7 @@
     ]
   },
   "server": {
-    "port": 8080,
+    "port": 12345,
     "host": "0.0.0.0"
   }
 }
