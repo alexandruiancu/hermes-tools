@@ -30,7 +30,7 @@
       "/v1/chat/completions",
       "/v1/embeddings",
       "/v1/completions",
-      "/v1/metrics"
+      "/metrics"
     ],
     "firecrawl": [
       "/api/v1/search",
@@ -41,8 +41,8 @@
       "/v1/images/variations"
     ],
     "openrouter": [
-      "/v1/chat/completions",
-      "/v1/models"
+      "/api/v1/chat/completions",
+      "/api/v1/models"
     ]
   },
   "server": {
