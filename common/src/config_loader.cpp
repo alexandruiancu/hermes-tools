@@ -56,6 +56,7 @@ void ConfigLoader::parse_endpoints(const nlohmann::json& json) {
         ep.enabled = obj.value("enabled", true);
         ep.ssl = obj.value("ssl", false);
         ep.api_key = obj.value("api_key", "");
+        ep.sd_model_path = obj.value("sd_model_path", "");  // Added: parse model path
         
         endpoints_.push_back(ep);
     }

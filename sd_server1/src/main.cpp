@@ -2,6 +2,7 @@
 #include <stable-diffusion.h>
 // Common helpers shared with other sd_server* projects
 #include "server_utils.hpp"
+#include "config_loader.hpp"
 #include <memory>
 #include <mutex>
 
@@ -22,12 +23,36 @@ int main()
     sd_ctx_params_t params;
     sd_ctx_params_init(&params);
     
-    // Set model path - you'll need to provide the actual model path
-    // For now, we'll use a default that should be overridden via config
-    params.model_path = std::getenv("SD_MODEL_PATH") ? std::getenv("SD_MODEL_PATH") : "/models/sd-model.gguf";
+    // 2) Load configuration from common/config.json
+    // Try to load sd_model_path from config, fall back to environment variable
+    std::string model_path;
+    if (ConfigLoader::load("common/config.json")) {
+        // Try to get sd_model_path from config
+        auto endpoints = ConfigLoader::get_endpoints();
+        for (const auto& ep : endpoints) {
+            if (ep.name == "image-gen" && !ep.sd_model_path.empty()) {
+                model_path = ep.sd_model_path;
+                break;
+            }
+        }
+    }
+    
+    // Set model path - config value, else env var, else default
+    if (model_path.empty()) {
+        model_path = std::getenv("SD_MODEL_PATH") ? std::getenv("SD_MODEL_PATH") : "/models/sd-model.gguf";
+    }
+    params.model_path = model_path.c_str();
     params.n_threads = std::thread::hardware_concurrency();
     params.wtype = SD_TYPE_Q4_K;  // Default quantization
-    params.rng_type = STD_DEFAULT_RNG;
+    
+#if defined(USE_CUDA)
+    params.rng_type = CUDA_RNG;  // Use CUDA RNG when GPU enabled
+    // OR
+    //params.backend = "cuda";
+    //params.params_backend = "cuda";
+#else
+    params.rng_type = STD_DEFAULT_RNG;  // Use CPU RNG by default
+#endif
     params.enable_mmap = true;
     params.flash_attn = true;
     

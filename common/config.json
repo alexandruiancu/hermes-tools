@@ -10,7 +10,8 @@
     },
     "image-gen": {
       "host": "op.local",
-      "port": 11903
+      "port": 11903,
+      "sd_model_path": "/home/andu/services/hermes-tools/sd_server1/models/tiny_sd.gguf"
     },
     "searxng": {
       "host": "op.local",

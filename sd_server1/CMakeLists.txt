@@ -29,4 +29,9 @@ target_include_directories(sd1 PRIVATE
 )
 
 # Link libraries
-target_link_libraries(sd1 PRIVATE CUDA::cudart Crow::Crow hermes_common stable-diffusion)
+if(USE_CUDA)
+  target_link_libraries(sd1 PRIVATE CUDA::cudart Crow::Crow hermes_common stable-diffusion)
+  target_compile_definitions(sd1 PRIVATE USE_CUDA=1)
+else()
+  target_link_libraries(sd1 PRIVATE Crow::Crow hermes_common stable-diffusion)
+endif()
