@@ -7,12 +7,22 @@ set(COMMON_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/common/include")
 cmake_minimum_required(VERSION 3.20)
 project(HermesTools)
 
-option(USE_CUDA "Enable CUDA support" OFF)
+option(USE_CUDA "Enable CUDA support" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(USE_CUDA)
+  message(STATUS "CUDA support enabled")
+endif()
+
 include(cmake/CPM.cmake)
+
+CPMAddPackage(
+    NAME nlohmann_json
+    GITHUB_REPOSITORY nlohmann/json
+    GIT_TAG v3.12.0
+)
 
 CPMAddPackage("gh:chriskohlhoff/asio#asio-1-38-2@1-32-2")
 if(asio_ADDED)
@@ -37,9 +47,8 @@ if(USE_CUDA)
   # Use modern FindCUDAToolkit
   find_package(CUDAToolkit REQUIRED)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
-
-  add_subdirectory(sd_server1 sd_server1/build)
 endif()
 
 add_subdirectory(common common/build)
 add_subdirectory(router router/build)
+add_subdirectory(sd_server1 sd_server1/build)

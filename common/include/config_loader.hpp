@@ -12,6 +12,7 @@ struct EndpointConfig {
     bool enabled = true;
     bool ssl = false;
     std::string api_key;
+    std::string sd_model_path;  // Added: for Stable Diffusion model path
 };
 
 struct ServerConfig {
