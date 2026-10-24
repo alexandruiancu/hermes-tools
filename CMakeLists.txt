@@ -52,3 +52,24 @@ endif()
 add_subdirectory(common common/build)
 add_subdirectory(router router/build)
 add_subdirectory(sd_server1 sd_server1/build)
+
+# ---------------------------------------------------------------------------
+# Install rules
+#
+# `cmake --install build` (or `make install`) bundles everything the two
+# servers need to run into a single directory:
+#
+#   <prefix>/bin/ai_router
+#   <prefix>/bin/sd1
+#   <prefix>/bin/config.json        (shared configuration for both)
+#   <prefix>/bin/libhermes_common.so (runtime dep of both binaries)
+#
+# Override the destination with -DHERMES_INSTALL_DIR=<dir> if needed.
+# ---------------------------------------------------------------------------
+if(NOT DEFINED HERMES_INSTALL_DIR)
+  set(HERMES_INSTALL_DIR "bin")
+endif()
+
+install(TARGETS ai_router sd1 RUNTIME DESTINATION ${HERMES_INSTALL_DIR})
+install(TARGETS hermes_common LIBRARY DESTINATION ${HERMES_INSTALL_DIR})
+install(FILES common/config.json DESTINATION ${HERMES_INSTALL_DIR})
