@@ -23,10 +23,10 @@ int main()
     sd_ctx_params_t params;
     sd_ctx_params_init(&params);
     
-    // 2) Load configuration from common/config.json
-    // Try to load sd_model_path from config, fall back to environment variable
+    // 2) Load configuration from config.json (installed alongside the binary)
+    // The install target copies config.json into the same directory as the binary
     std::string model_path;
-    if (ConfigLoader::load("common/config.json")) {
+    if (ConfigLoader::load("config.json")) {
         // Try to get sd_model_path from config
         auto endpoints = ConfigLoader::get_endpoints();
         for (const auto& ep : endpoints) {
