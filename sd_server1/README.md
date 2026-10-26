@@ -107,7 +107,7 @@ You should see a base64 string that starts with `iVBORw0KGgo` (the PNG magic num
 ## Notes
 
 - The server currently does not expose any metrics endpoints.  The `Metrics` class is available for future integration.
-- The build uses the CPU backend of stable‑diffusion.cpp.  If you have an NVIDIA GPU and the CUDA toolkit installed, you can enable GPU support by setting `params.enable_gpu = true` in `sd_server1/src/main.cpp` and linking against the CUDA libraries.
+- The build uses the CPU backend of stable‑diffusion.cpp.  If you have an NVIDIA GPU and the CUDA toolkit installed, you can enable GPU support by setting `params.rng_type = CUDA_RNG` in `sd_server1/src/main.cpp` and linking against the CUDA libraries.
 
 ---
 

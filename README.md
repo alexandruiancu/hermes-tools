@@ -130,3 +130,13 @@ Hermes can now forward any prompt that requires image generation to this endpoin
 | CrowCpp | Yes, with TLS support | No native HTTP/2 support | Limited / not a primary focus | Fast small web APIs, local services, simple routing | Not ideal for streaming-heavy AI gateway |
 | nghttp2 | N/A as a full app server; HTTP/2 engine | Yes, strong HTTP/2 support | Not a general web server | HTTP/2 transport, multiplexing, streaming | You still need app/server glue around it |
 
+## 12. Development Environment Setup
+
+This project provides scripts and documentation for setting up the development environment across different Linux distributions and container platforms.
+
+- **Arch Linux**: Refer to `doc/README_arch.md` and `doc/setup_cuda_arch.sh`
+- **Fedora**: Refer to `doc/README_fedora.md` and `doc/setup_cuda_fedora.sh`
+- **Ubuntu**: Refer to `doc/README_ubuntu.md` and `doc/setup_cuda_ubuntu.sh`
+
+Each script installs the CUDA toolkit, development dependencies, and configures the environment for building and running the Hermes tools gateway.
+

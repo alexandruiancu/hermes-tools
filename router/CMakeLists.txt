@@ -7,8 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(Boost 1.70 REQUIRED CONFIG COMPONENTS system)
 find_package(OpenSSL REQUIRED)
 
-add_executable(ai_router src/main.cpp src/proxy.cpp src/metrics.cpp 
-    src/token_cache.hpp)
+add_executable(ai_router src/main.cpp src/proxy.cpp src/metrics.cpp)
 
 target_include_directories(ai_router PRIVATE
     ${Boost_INCLUDE_DIRS}

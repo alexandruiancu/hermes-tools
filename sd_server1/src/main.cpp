@@ -98,14 +98,13 @@ int main()
             gen_params.sample_params.scheduler = sd_get_default_scheduler(sd_ctx.ctx, gen_params.sample_params.sample_method);
             
             // Run inference
-            sd_image_t* images_out = nullptr;
-            int num_images_out = 0;
+            sd_image_generation_result_t* gen_result = nullptr;
             
             {
                 std::lock_guard<std::mutex> lock(sd_ctx.mtx);
-                bool success = generate_image(sd_ctx.ctx, &gen_params, &images_out, &num_images_out);
+                bool success = generate_image(sd_ctx.ctx, &gen_params, &gen_result);
                 
-                if (!success || num_images_out == 0 || !images_out) {
+                if (!success || gen_result == nullptr || gen_result->count == 0) {
                     set_error(res, 500, "Image generation failed");
                     return;
                 }
@@ -113,7 +112,7 @@ int main()
             
             // Convert the first generated image to PNG bytes
             // The image data is in RGBA format
-            sd_image_t& img = images_out[0];
+            sd_image_t& img = gen_result->items[0].image;
             std::vector<uint8_t> png_data(img.width * img.height * 4);
             std::memcpy(png_data.data(), img.data, img.width * img.height * 4);
             
