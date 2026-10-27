@@ -35,3 +35,6 @@ if(USE_CUDA)
 else()
   target_link_libraries(sd1 PRIVATE Crow::Crow hermes_common stable-diffusion)
 endif()
+
+# Install rules - copy models sub-directory into install target
+install(DIRECTORY models DESTINATION ${HERMES_INSTALL_DIR})
