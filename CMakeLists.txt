@@ -49,10 +49,6 @@ if(USE_CUDA)
   include_directories(${CUDAToolkit_INCLUDE_DIRS})
 endif()
 
-add_subdirectory(common common/build)
-add_subdirectory(router router/build)
-add_subdirectory(sd_server1 sd_server1/build)
-
 # ---------------------------------------------------------------------------
 # Install rules
 #
@@ -67,10 +63,14 @@ add_subdirectory(sd_server1 sd_server1/build)
 # Override the destination with -DHERMES_INSTALL_DIR=<dir> if needed.
 # ---------------------------------------------------------------------------
 if(NOT DEFINED HERMES_INSTALL_DIR)
-  set(HERMES_INSTALL_DIR "bin")
+  set(HERMES_INSTALL_DIR "bin" CACHE STRING "Default installation root for Hermes")
 endif()
+
+add_subdirectory(common common/build)
+add_subdirectory(router router/build)
+add_subdirectory(sd_server1 sd_server1/build)
 
 install(TARGETS ai_router sd1 RUNTIME DESTINATION ${HERMES_INSTALL_DIR})
 install(TARGETS hermes_common LIBRARY DESTINATION ${HERMES_INSTALL_DIR})
 install(FILES common/config.json DESTINATION ${HERMES_INSTALL_DIR})
-install(DIRECTORY models DESTINATION ${HERMES_INSTALL_DIR})
+install(DIRECTORY sd_server1/models DESTINATION ${HERMES_INSTALL_DIR})
