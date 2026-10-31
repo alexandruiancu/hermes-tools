@@ -8,19 +8,52 @@ A small C++ HTTP router (`ai_router`, Boost.Beast) that sits in front of local a
 
 ```
 ~/services/hermes-tools/
-├─ CMakeLists.txt   - top-level build
-├─ cmake/           - CPM helpers (CPM.cmake, crow.cmake)
-├─ common/          - shared C++ helpers (include/, src/)
-├─ router/          - the AI router (Boost.Beast)
-│  ├─ src/          - main.cpp, proxy.cpp, metrics.cpp, config_loader.cpp
-│  ├─ config.json   - endpoints, api_routes, server settings
+├─ CMakeLists.txt    - top-level build configuration
+├─ cmake/            - CPM helpers (CPM.cmake, crow.cmake)
+├─ _deps/            - external dependencies (asio, crow, llama.cpp, etc.)
+├─ build/            - compiled output and build artifacts
+├─ common/           - shared C++ helpers
+│  ├─ include/       - header files
+│  ├─ src/           - source files
+│  ├─ config.json    - common configuration
 │  └─ CMakeLists.txt
-├─ sd_server1/      - legacy: Crow image-gen server
-├─ sd_container/    - legacy: container quadlets
-│  ├─ pod-setup.sh
+├─ doc/              - documentation
+│  ├─ README_arch.md    - Arch Linux toolbox setup
+│  ├─ README_fedora.md  - Fedora toolbox setup
+│  ├─ README_ubuntu.md  - Ubuntu Multipass setup
+│  ├─ setup_cuda_arch.sh    - Arch Linux toolbox container setup
+│  ├─ setup_cuda_fedora.sh  - Fedora 44 toolbox container setup
+│  └─ setup_cuda_ubuntu.sh  - Ubuntu 22.04 Multipass container setup
+├─ router/           - AI router (Boost.Beast HTTP router)
+│  ├─ CMakeLists.txt
+│  ├─ README.md
+│  ├─ _deps/
+│  ├─ src/              - main.cpp, proxy.cpp, metrics.cpp, config_loader.cpp
+│  ├─ include/
+│  ├─ config.json       - endpoints, api_routes, server settings
+│  └─ CMakeLists.txt
+├─ sd_server1/       - legacy: Crow image-gen server (requires CUDA)
+│  ├─ CMakeLists.txt
+│  ├─ include/
+│  ├─ models/
+│  ├─ src/
+│  ├─ CMakePresets.json
+│  ├─ CMakeUserPresets.json
+│  ├─ Doxyfile
+│  ├─ mkdocs.yml
+│  ├─ MODULE.bazel
+│  ├─ README.md
+│  ├─ vcpkg.json
+│  ├─ cmake/
+│  ├─ examples/
+│  └─ tests/
+├─ sd_container/     - legacy: container quadlets
+│  ├─ .gitignore
 │  └─ models/
-├─ .env             - runtime parametrization
-└─ plan.md          - design notes
+├─ .env              - runtime parametrization
+├─ plan.md           - design notes
+├─ sr-integration-plan.md - integration plan summary
+└─ .gitignore
 ```
 ---
 
@@ -54,11 +87,15 @@ cmake --build build
 
 > **Why two stages?** The build stage pulls the C++ compiler and Crow dev libs, compiles the server, then copies only the compiled binary and the `llama-diffusion-cli` binary into the minimal runtime image, keeping the final image size small.
 
----
+## 5. Toolbox container build & debug
 
-## 5. Build & run instructions
+The build and debug operations happen inside a toolbox container. Setup scripts are available:
 
-> The container will start the Crow server listening on port 8000 inside the pod.
+- **Arch Linux**: `setup_cuda_arch.sh` - creates a toolbox container with CUDA development tools
+- **Fedora**: `setup_cuda_toolbox.sh` - creates a Fedora 44 toolbox container named `fedora-44-cuda-dev`
+- **Ubuntu**: `setup_cuda_ubuntu.sh` - creates an Ubuntu 22.04 Multipass container named `ubuntu-cuda-dev`
+
+These scripts install the CUDA toolkit, development tools, and build dependencies in an isolated container environment.
 
 ---
 

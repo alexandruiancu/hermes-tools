@@ -2,6 +2,10 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+
+# Set rpath to use $ORIGIN so installed binaries find shared libs in their own directory
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
 set(COMMON_INCLUDES "${CMAKE_CURRENT_SOURCE_DIR}/common/include")
 
 cmake_minimum_required(VERSION 3.20)
